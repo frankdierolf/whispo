@@ -5,6 +5,7 @@ use std::sync::{Arc, Mutex};
 pub struct AudioRecorder {
     samples: Arc<Mutex<Vec<f32>>>,
     sample_rate: u32,
+    channels: u16,
 }
 
 impl AudioRecorder {
@@ -12,6 +13,7 @@ impl AudioRecorder {
         Ok(AudioRecorder {
             samples: Arc::new(Mutex::new(Vec::new())),
             sample_rate: 44100, // Default sample rate
+            channels: 1, // Default channels
         })
     }
 
@@ -26,8 +28,7 @@ impl AudioRecorder {
             .context("Failed to get default input config")?;
 
         self.sample_rate = config.sample_rate().0;
-
-        println!("Recording started... (Sample rate: {})", self.sample_rate);
+        self.channels = config.channels();
 
         let samples = self.samples.clone();
         samples.lock().unwrap().clear();
@@ -75,8 +76,6 @@ impl AudioRecorder {
     }
 
     pub fn stop_and_save(&self) -> Result<Vec<u8>> {
-        println!("Recording stopped. Processing audio...");
-
         let samples = self.samples.lock().unwrap();
 
         if samples.is_empty() {
@@ -86,14 +85,18 @@ impl AudioRecorder {
         // Convert f32 samples to i16 for WAV format
         let i16_samples: Vec<i16> = samples
             .iter()
-            .map(|&s| (s * i16::MAX as f32) as i16)
+            .map(|&s| {
+                // Clamp to [-1.0, 1.0] range and convert to i16
+                let clamped = s.clamp(-1.0, 1.0);
+                (clamped * i16::MAX as f32) as i16
+            })
             .collect();
 
         // Write to WAV format in memory
         let mut cursor = std::io::Cursor::new(Vec::new());
         {
             let spec = hound::WavSpec {
-                channels: 1,
+                channels: self.channels,
                 sample_rate: self.sample_rate,
                 bits_per_sample: 16,
                 sample_format: hound::SampleFormat::Int,
@@ -107,9 +110,5 @@ impl AudioRecorder {
         }
 
         Ok(cursor.into_inner())
-    }
-
-    pub fn get_sample_count(&self) -> usize {
-        self.samples.lock().unwrap().len()
     }
 }

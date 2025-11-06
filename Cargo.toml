@@ -1,10 +1,10 @@
 [package]
 name = "whisp"
 version = "0.1.0"
-edition = "2021"
+edition = "2024"
 
 [dependencies]
-cpal = "0.15"
+cpal = "0.16"
 hound = "3.5.1"
 reqwest = { version = "0.12.24", features = ["blocking", "multipart"] }
 tokio = { version = "1.48", features = ["full"] }

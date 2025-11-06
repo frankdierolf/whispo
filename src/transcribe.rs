@@ -8,8 +8,6 @@ struct TranscriptionResponse {
 }
 
 pub fn transcribe_audio(api_key: &str, audio_data: Vec<u8>) -> Result<String> {
-    println!("Sending audio to OpenAI Whisper API...");
-
     let client = reqwest::blocking::Client::new();
 
     // Create multipart form
@@ -38,8 +36,6 @@ pub fn transcribe_audio(api_key: &str, audio_data: Vec<u8>) -> Result<String> {
     let text = response.text().context("Failed to get response text")?;
     let transcription: TranscriptionResponse = serde_json::from_str(&text)
         .context("Failed to parse OpenAI API response")?;
-
-    println!("Transcription received!");
 
     Ok(transcription.text)
 }

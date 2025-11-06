@@ -7,6 +7,5 @@ pub fn copy_to_clipboard(text: &str) -> Result<()> {
         .set_text(text)
         .context("Failed to copy text to clipboard")?;
 
-    println!("Text copied to clipboard!");
     Ok(())
 }

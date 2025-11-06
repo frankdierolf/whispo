@@ -1,98 +1,57 @@
-# Whisp - Voice to Text CLI
+# Whisp
 
-A simple command-line tool that records your voice and transcribes it using OpenAI's Whisper API, then copies the result to your clipboard.
+Voice-to-text for terminal users. Record your voice, get instant transcription to clipboard.
 
-## Features
+Built for Linux terminal workflows with Claude Code, Cursor, Gemini CLI, and other AI coding tools. Think whisperflow.ai, but minimal and CLI-native.
 
-- Press Enter to start/stop recording
-- Automatic transcription using OpenAI Whisper
-- Copies transcription directly to clipboard
-- Simple and fast workflow
+## Why Whisp?
 
-## Prerequisites
+OpenAI's Whisper API delivers the most accurate transcriptions compared to local models or other providers. Whisp makes it dead simple to use from the terminal.
 
-- Rust (latest stable version)
-- OpenAI API key with access to Whisper API
-- Linux with working audio input device
-- ALSA or PulseAudio for audio recording
+## Quick Start
 
-## Installation
+```bash
+# Clone and enter directory
+git clone <repo-url>
+cd whisp
 
-1. Clone or download this repository
-2. Copy the example environment file:
-   ```bash
-   cp .env.example .env
-   ```
-3. Edit `.env` and add your OpenAI API key:
-   ```
-   OPENAI_API_KEY=sk-...your-key-here...
-   ```
-4. Build the project:
-   ```bash
-   cargo build --release
-   ```
+# Set your OpenAI API key
+cp .env.example .env
+# Edit .env and add: OPENAI_API_KEY=sk-your-key-here
+
+# Build
+cargo build --release
+
+# Run
+./target/release/whisp
+```
 
 ## Usage
 
-Run the program:
-```bash
-cargo run --release
-```
-
-Or use the compiled binary:
 ```bash
 ./target/release/whisp
 ```
 
-### Workflow
+1. Recording starts automatically
+2. Press Enter to stop
+3. Transcription copies to clipboard
 
-1. Run the program
-2. Press **Enter** to start recording
-3. Speak into your microphone
-4. Press **Enter** again to stop recording
-5. Wait for transcription (a few seconds)
-6. The transcribed text will be copied to your clipboard automatically!
+That's it. Paste into your AI coding tool.
 
-## Configuration
+## Requirements
 
-Create a `.env` file in the project root with:
-```
-OPENAI_API_KEY=your-api-key-here
-```
+- Rust (latest stable)
+- OpenAI API key ([get one here](https://platform.openai.com/api-keys))
+- Linux with working microphone
+- ALSA or PulseAudio
 
-Get your API key from: https://platform.openai.com/api-keys
+## Building from Source
 
-## Future Features
-
-- Global keyboard shortcut support (planned)
-- Configurable audio settings
-- Multiple output formats
-- Local Whisper model support
-
-## Troubleshooting
-
-### No audio input device
-Make sure your microphone is connected and working. Test with:
 ```bash
-arecord -l
+cargo build --release
 ```
 
-### API key errors
-- Verify your API key is correct in `.env`
-- Check that your OpenAI account has API access enabled
-- Ensure you have credits available
-
-### Clipboard issues
-Make sure you have a clipboard manager installed. On Linux, `xclip` or `wl-clipboard` (for Wayland) should be available.
-
-## Dependencies
-
-- `cpal` - Cross-platform audio I/O
-- `hound` - WAV encoding
-- `reqwest` - HTTP client for OpenAI API
-- `arboard` - Clipboard access
-- `tokio` - Async runtime
-- `dotenv` - Environment variable management
+Binary will be at `./target/release/whisp`
 
 ## License
 

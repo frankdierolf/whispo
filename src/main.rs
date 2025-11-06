@@ -7,9 +7,6 @@ use anyhow::Result;
 use std::io::{self, Write};
 
 fn main() -> Result<()> {
-    println!("🎤 Whisp - Voice to Text");
-    println!("========================\n");
-
     // Load configuration
     let config = match config::Config::from_env() {
         Ok(cfg) => cfg,
@@ -21,19 +18,19 @@ fn main() -> Result<()> {
         }
     };
 
-    println!("Press Enter to start recording...");
-    wait_for_enter()?;
-
     // Create recorder and start recording
     let mut recorder = audio::AudioRecorder::new()?;
     recorder.start_recording()?;
 
-    println!("\n🔴 RECORDING - Press Enter to stop...\n");
+    print!("Recording... (press Enter to stop)");
+    io::stdout().flush()?;
     wait_for_enter()?;
 
     // Stop recording and get audio data
     let audio_data = recorder.stop_and_save()?;
-    println!("Captured {} bytes of audio data", audio_data.len());
+
+    print!("\rTranscribing...                        \n");
+    io::stdout().flush()?;
 
     // Transcribe
     let transcription = match transcribe::transcribe_audio(&config.openai_api_key, audio_data) {
@@ -44,16 +41,10 @@ fn main() -> Result<()> {
         }
     };
 
-    // Display result
-    println!("\n📝 Transcription:");
-    println!("─────────────────");
-    println!("{}", transcription);
-    println!("─────────────────\n");
-
     // Copy to clipboard
     clipboard::copy_to_clipboard(&transcription)?;
 
-    println!("✓ Done! The transcription has been copied to your clipboard.");
+    println!("Copied to clipboard");
 
     Ok(())
 }
