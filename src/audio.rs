@@ -58,7 +58,7 @@ impl AudioRecorder {
         T: cpal::Sample + cpal::SizedSample,
         f32: cpal::FromSample<T>,
     {
-        let err_fn = |err| eprintln!("Error in audio stream: {}", err);
+        let err_fn = |err| eprintln!("Error in audio stream: {err}");
 
         let stream = device.build_input_stream(
             config,
@@ -135,7 +135,7 @@ impl AudioRecorder {
         if !output.status.success() {
             let _ = std::fs::remove_file(&mp3_path);
             let stderr = String::from_utf8_lossy(&output.stderr);
-            anyhow::bail!("FFmpeg conversion failed: {}", stderr);
+            anyhow::bail!("FFmpeg conversion failed: {stderr}");
         }
 
         // Read the MP3 file
@@ -151,11 +151,9 @@ impl AudioRecorder {
             let size_mb = mp3_data.len() as f64 / (1024.0 * 1024.0);
             let duration_estimate = samples.len() as f64 / (self.sample_rate as f64 * self.channels as f64);
             anyhow::bail!(
-                "Audio file is too large ({:.2} MB). OpenAI's limit is 25 MB.\n\
-                Recording duration: ~{:.1} seconds.\n\
-                Try recording a shorter message (recommended: under 45 minutes).",
-                size_mb,
-                duration_estimate
+                "Audio file is too large ({size_mb:.2} MB). OpenAI's limit is 25 MB.\n\
+                Recording duration: ~{duration_estimate:.1} seconds.\n\
+                Try recording a shorter message (recommended: under 45 minutes)."
             );
         }
 

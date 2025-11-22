@@ -1,24 +1,10 @@
 # Whispo
 
-Voice-to-text for terminal users. Record your voice, get instant transcription to clipboard.
-
-Built for Linux terminal workflows with Claude Code, Cursor, Gemini CLI, and other AI coding tools. Think whisperflow.ai, but minimal and CLI-native.
+Minimal voice-to-text CLI for terminal users. Record your voice, get instant transcription to clipboard.
 
 ## Demo
 
 ![Whispo Demo](demo.gif)
-
-## Why Whispo?
-
-I wanted whisperflow.ai for the terminal—accurate voice input for AI coding tools. But it's $12/month with no Linux version. Local models required downloads, resources, and constant setup. I got annoyed. I wanted simplicity and the Unix philosophy.
-
-Whispo costs based on usage—maximum €3/month for typical use. Zero setup, zero configuration.
-
-**For AI coding workflows.** Built for composing prompts to Claude Code, Cursor, and terminal AI tools. Not for coding by voice or general dictation.
-
-**Radically minimal.** One command. No config files, no background daemons, no hotkeys, no models. Run it, speak, press Enter, paste.
-
-**Terminal-native.** Cloud API accuracy without local complexity. Built for developers who live in Linux terminals.
 
 ## Quick Start
 
@@ -45,6 +31,23 @@ whispo
 
 That's it. Paste into your AI coding tool.
 
+## Optional: Hotkey Mode (GNOME Only)
+
+For hands-free operation on GNOME desktops (Ubuntu, Omakub, etc.):
+
+```bash
+whispo setup-hotkey    # One-time setup
+whispo listen          # Start background service
+
+# Press your hotkey (default: Ctrl+Shift+R) anywhere to toggle recording
+```
+
+Other commands:
+```bash
+whispo status          # Check service status
+whispo stop            # Stop background service
+```
+
 ## Requirements
 
 - Rust (latest stable)
@@ -52,6 +55,7 @@ That's it. Paste into your AI coding tool.
 - FFmpeg (for audio compression)
 - Linux with working microphone
 - ALSA or PulseAudio
+- GNOME desktop (for hotkey mode only)
 
 ### Installing FFmpeg
 
@@ -70,6 +74,20 @@ cargo build --release
 ```
 
 Binary will be at `./target/release/whispo`
+
+## FAQ
+
+**How does hotkey mode work?**
+
+A lightweight background service communicates via Unix sockets. GNOME's native keyboard shortcuts call `whispo toggle`. No special permissions required. Works on Wayland and X11.
+
+**Can I use hotkey mode on other desktop environments?**
+
+The `setup-hotkey` command is GNOME-specific, but you can manually configure hotkeys in KDE, i3, sway, etc. to call `whispo toggle`.
+
+**Does the simple mode still work?**
+
+Yes! Running `whispo` without arguments works exactly as before. Hotkey mode is completely optional.
 
 ## Inspiration
 

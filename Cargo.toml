@@ -1,6 +1,6 @@
 [package]
 name = "whispo"
-version = "0.2.0"
+version = "0.3.0"
 edition = "2024"
 authors = ["Frank Dierolf <frank_dierolf@web.de>"]
 description = "Voice-to-text CLI for terminal users using OpenAI Whisper API"
@@ -15,8 +15,9 @@ cpal = "0.16"
 hound = "3.5.1"
 reqwest = { version = "0.12.24", features = ["blocking", "multipart"] }
 tokio = { version = "1.48", features = ["full"] }
-arboard = "3.6"
+arboard = "3.6.1"
 dotenvy = "0.15.7"
 anyhow = "1.0.100"
 serde = { version = "1.0.228", features = ["derive"] }
-serde_json = "1.0.143"
+serde_json = "1.0.145"
+clap = { version = "4.5.53", features = ["derive"] }

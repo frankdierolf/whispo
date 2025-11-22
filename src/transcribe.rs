@@ -22,7 +22,7 @@ pub fn transcribe_audio(api_key: &str, audio_data: Vec<u8>) -> Result<String> {
 
     let response = client
         .post("https://api.openai.com/v1/audio/transcriptions")
-        .header("Authorization", format!("Bearer {}", api_key))
+        .header("Authorization", format!("Bearer {api_key}"))
         .multipart(form)
         .send()
         .context("Failed to send request to OpenAI API")?;
@@ -30,7 +30,7 @@ pub fn transcribe_audio(api_key: &str, audio_data: Vec<u8>) -> Result<String> {
     if !response.status().is_success() {
         let status = response.status();
         let error_text = response.text().unwrap_or_else(|_| "Unknown error".to_string());
-        anyhow::bail!("OpenAI API error ({}): {}", status, error_text);
+        anyhow::bail!("OpenAI API error ({status}): {error_text}");
     }
 
     let text = response.text().context("Failed to get response text")?;
