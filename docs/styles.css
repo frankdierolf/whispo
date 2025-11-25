@@ -236,7 +236,7 @@ a:hover {
   border: 1px solid var(--color-border-weak);
   border-top: none;
   border-radius: 0 0 6px 6px;
-  padding: 1rem 1.5rem;
+  padding: 1rem 1.5rem 1rem 1rem;
 }
 
 [data-slot="panel"] {
