@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>whis | Voice-to-text for your terminal</title>
+  <meta name="description" content="Minimal voice-to-text CLI for terminal workflows. Speak. Paste. Ship.">
+  <meta name="keywords" content="voice-to-text, CLI, terminal, whisper, transcription, Linux">
+  <meta name="author" content="Frank Dierolf">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="whis | Voice-to-text for your terminal">
+  <meta property="og:description" content="Minimal voice-to-text CLI for terminal workflows. One command. That's it.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://whis.ink">
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="whis | Voice-to-text for your terminal">
+  <meta name="twitter:description" content="Minimal voice-to-text CLI for terminal workflows. One command. That's it.">
+
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main data-page="whis">
+    <div data-component="container">
+
+      <!-- Hero -->
+      <section data-component="hero">
+        <div data-slot="logo">
+          <span data-slot="wordmark">whis</span>
+        </div>
+        <div data-slot="hero-copy">
+          <h1>Speak. Paste. Ship.</h1>
+          <p>Voice-to-text for terminal workflows. One command. That's it.</p>
+        </div>
+        <div data-slot="hero-cta">
+          <a href="#install" data-slot="cta-primary">Get Started</a>
+          <a href="https://github.com/frankdierolf/whis" target="_blank" rel="noopener" data-slot="cta-secondary">GitHub</a>
+        </div>
+      </section>
+
+      <!-- Install -->
+      <section data-component="install" id="install">
+        <div data-component="tabs">
+          <div data-slot="tablist" role="tablist">
+            <button data-slot="tab" data-value="cargo" role="tab" aria-selected="true">cargo</button>
+            <button data-slot="tab" data-value="source" role="tab" aria-selected="false">source</button>
+          </div>
+          <div data-slot="panels">
+            <div data-slot="panel" data-value="cargo" role="tabpanel">
+              <button data-slot="command" data-copy>
+                <code><span data-slot="prefix">cargo install </span><span data-slot="highlight">whis</span></code>
+                <span data-component="copy-status">
+                  <svg data-slot="copy" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                  </svg>
+                  <svg data-slot="check" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                </span>
+              </button>
+            </div>
+            <div data-slot="panel" data-value="source" role="tabpanel" hidden>
+              <button data-slot="command" data-copy>
+                <code><span data-slot="prefix">git clone https://github.com/frankdierolf/whis && cd whis && </span><span data-slot="highlight">cargo build --release</span></code>
+                <span data-component="copy-status">
+                  <svg data-slot="copy" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                  </svg>
+                  <svg data-slot="check" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                </span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Features -->
+      <section data-component="features">
+        <div data-slot="section-header">
+          <h2>What is whis?</h2>
+          <p>A minimal CLI that pipes your voice straight to the clipboard.</p>
+        </div>
+        <ul>
+          <li>
+            <span data-slot="marker">[*]</span>
+            <div><strong>One command</strong> Run whis. Speak. Done.</div>
+          </li>
+          <li>
+            <span data-slot="marker">[*]</span>
+            <div><strong>Whisper-powered</strong> OpenAI's Whisper API does the heavy lifting</div>
+          </li>
+          <li>
+            <span data-slot="marker">[*]</span>
+            <div><strong>Straight to clipboard</strong> Ready to paste wherever you need it</div>
+          </li>
+          <li>
+            <span data-slot="marker">[*]</span>
+            <div><strong>Hotkey mode</strong> Ctrl+Shift+R toggles recording from anywhere</div>
+          </li>
+          <li>
+            <span data-slot="marker">[*]</span>
+            <div><strong>X11 &amp; Wayland</strong> Works where you work</div>
+          </li>
+          <li>
+            <span data-slot="marker">[*]</span>
+            <div><strong>Single binary</strong> No runtime dependencies. No bloat.</div>
+          </li>
+        </ul>
+      </section>
+
+      <!-- Demo -->
+      <section data-component="demo">
+        <figure>
+          <img src="demo.gif" alt="whis demo: run whis command, speak, press Enter, text is copied to clipboard" loading="lazy">
+          <figcaption>Record &rarr; Transcribe &rarr; Paste</figcaption>
+        </figure>
+      </section>
+
+      <!-- Quick Start -->
+      <section data-component="quickstart">
+        <h2>Quick Start</h2>
+        <pre><code><span data-slot="comment"># 1. Set your API key</span>
+<span data-slot="command">export</span> <span data-slot="var">OPENAI_API_KEY</span>=sk-...
+
+<span data-slot="comment"># 2. Record and transcribe</span>
+<span data-slot="highlight">whis</span>
+
+<span data-slot="comment"># 3. Press Enter to stop — text is copied!</span></code></pre>
+      </section>
+
+      <!-- FAQ -->
+      <section data-component="faq">
+        <h2>FAQ</h2>
+        <ul>
+          <li data-component="faq-item" data-closed>
+            <button data-slot="faq-question">
+              <span data-slot="faq-icon-plus">+</span>
+              <span data-slot="faq-icon-minus">&minus;</span>
+              <span>What do I need?</span>
+            </button>
+            <div data-slot="faq-answer">
+              <p>An OpenAI API key, FFmpeg, and a mic. That's the stack.</p>
+            </div>
+          </li>
+          <li data-component="faq-item" data-closed>
+            <button data-slot="faq-question">
+              <span data-slot="faq-icon-plus">+</span>
+              <span data-slot="faq-icon-minus">&minus;</span>
+              <span>How does hotkey mode work?</span>
+            </button>
+            <div data-slot="faq-answer">
+              <p>Run <code>whis listen</code> to start the background service. Hit Ctrl+Shift+R to toggle recording from anywhere. Customize with <code>--hotkey</code>.</p>
+            </div>
+          </li>
+          <li data-component="faq-item" data-closed>
+            <button data-slot="faq-question">
+              <span data-slot="faq-icon-plus">+</span>
+              <span data-slot="faq-icon-minus">&minus;</span>
+              <span>What about my audio data?</span>
+            </button>
+            <div data-slot="faq-answer">
+              <p>Goes straight to OpenAI's API. whis doesn't store anything.</p>
+            </div>
+          </li>
+          <li data-component="faq-item" data-closed>
+            <button data-slot="faq-question">
+              <span data-slot="faq-icon-plus">+</span>
+              <span data-slot="faq-icon-minus">&minus;</span>
+              <span>macOS? Windows?</span>
+            </button>
+            <div data-slot="faq-answer">
+              <p>Linux only for now. X11 and Wayland both work.</p>
+            </div>
+          </li>
+          <li data-component="faq-item" data-closed>
+            <button data-slot="faq-question">
+              <span data-slot="faq-icon-plus">+</span>
+              <span data-slot="faq-icon-minus">&minus;</span>
+              <span>Why not just type?</span>
+            </button>
+            <div data-slot="faq-answer">
+              <p>Sometimes you just want to talk to your AI coding assistant without breaking flow.</p>
+            </div>
+          </li>
+        </ul>
+      </section>
+
+      <!-- Footer -->
+      <footer data-component="footer">
+        <div data-slot="cell">
+          <a href="https://github.com/frankdierolf/whis" target="_blank" rel="noopener">GitHub</a>
+        </div>
+        <div data-slot="cell">
+          <a href="https://github.com/frankdierolf/whis/issues" target="_blank" rel="noopener">Issues</a>
+        </div>
+        <div data-slot="cell">
+          <span>MIT License</span>
+        </div>
+        <div data-slot="cell">
+          <span>Frank Dierolf</span>
+        </div>
+      </footer>
+
+    </div>
+  </main>
+
+  <script>
+    // Copy to clipboard
+    document.querySelectorAll('[data-copy]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const code = btn.querySelector('code');
+        const text = code ? code.textContent.trim() : btn.textContent.trim();
+        navigator.clipboard.writeText(text);
+        btn.setAttribute('data-copied', '');
+        setTimeout(() => btn.removeAttribute('data-copied'), 1500);
+      });
+    });
+
+    // Tab switching
+    document.querySelectorAll('[data-slot="tab"]').forEach(tab => {
+      tab.addEventListener('click', () => {
+        const value = tab.dataset.value;
+        const tabs = tab.closest('[data-component="tabs"]');
+
+        tabs.querySelectorAll('[data-slot="tab"]').forEach(t => {
+          t.setAttribute('aria-selected', t.dataset.value === value);
+        });
+
+        tabs.querySelectorAll('[data-slot="panel"]').forEach(p => {
+          p.hidden = p.dataset.value !== value;
+        });
+      });
+    });
+
+    // FAQ accordion
+    document.querySelectorAll('[data-slot="faq-question"]').forEach(q => {
+      q.addEventListener('click', () => {
+        const item = q.closest('[data-component="faq-item"]');
+        const isExpanded = item.hasAttribute('data-expanded');
+
+        if (isExpanded) {
+          item.removeAttribute('data-expanded');
+          item.setAttribute('data-closed', '');
+        } else {
+          item.removeAttribute('data-closed');
+          item.setAttribute('data-expanded', '');
+        }
+      });
+    });
+  </script>
+</body>
+</html>
