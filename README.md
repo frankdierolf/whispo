@@ -1,28 +1,28 @@
-# Whispo
+# whis
 
 Minimal voice-to-text CLI for terminal users. Record your voice, get instant transcription to clipboard.
 
 ## Demo
 
-![Whispo Demo](demo.gif)
+![whis Demo](demo.gif)
 
 ## Quick Start
 
 ```bash
 # Install
-cargo install whispo
+cargo install whis
 
 # Set API key (add to ~/.bashrc or ~/.zshrc)
 export OPENAI_API_KEY=sk-your-key-here
 
 # Run
-whispo
+whis
 ```
 
 ## Usage
 
 ```bash
-whispo
+whis
 ```
 
 1. Recording starts automatically
@@ -42,17 +42,17 @@ echo 'KERNEL=="uinput", GROUP="input", MODE="0660"' | sudo tee /etc/udev/rules.d
 sudo udevadm control --reload-rules && sudo udevadm trigger
 
 # Start the service with built-in hotkey
-whispo listen                        # Default: Ctrl+Shift+R
-whispo listen --hotkey "ctrl+alt+r"  # Custom hotkey
-whispo listen -k "super+r"           # Short form
+whis listen                        # Default: Ctrl+Shift+R
+whis listen --hotkey "ctrl+alt+r"  # Custom hotkey
+whis listen -k "super+r"           # Short form
 ```
 
 Press your hotkey anywhere to toggle recording. Works on all Linux distros (X11 and Wayland).
 
 Other commands:
 ```bash
-whispo status          # Check service status
-whispo stop            # Stop background service
+whis status          # Check service status
+whis stop            # Stop background service
 ```
 
 ## Requirements
@@ -80,7 +80,7 @@ brew install ffmpeg
 cargo build --release
 ```
 
-Binary will be at `./target/release/whispo`
+Binary will be at `./target/release/whis`
 
 ## FAQ
 
@@ -94,11 +94,7 @@ Combinations of modifiers (`ctrl`, `shift`, `alt`, `super`) and keys (`a-z`, `0-
 
 **Does the simple mode still work?**
 
-Yes! Running `whispo` without arguments works exactly as before. Hotkey mode is completely optional.
-
-## Inspiration
-
-Inspired by [whisp](https://github.com/yummyweb/whisp) - a desktop voice input tool with system tray integration.
+Yes! Running `whis` without arguments works exactly as before. Hotkey mode is completely optional.
 
 ## License
 

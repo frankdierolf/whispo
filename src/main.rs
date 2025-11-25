@@ -11,8 +11,10 @@ use clap::{Parser, Subcommand};
 use std::io::{self, Write};
 
 #[derive(Parser)]
-#[command(name = "whispo")]
-#[command(about = "Voice-to-text CLI using OpenAI Whisper API", long_about = None)]
+#[command(name = "whis")]
+#[command(version)]
+#[command(about = "Voice-to-text CLI using OpenAI Whisper API")]
+#[command(after_help = "Run 'whis' without arguments to record once (press Enter to stop).")]
 struct Cli {
     #[command(subcommand)]
     command: Option<Commands>,
@@ -53,8 +55,8 @@ async fn run_listen(hotkey_str: String) -> Result<()> {
 
     // Check if service is already running
     if ipc::is_service_running() {
-        eprintln!("Error: Whispo service is already running.");
-        eprintln!("Use 'whispo stop' to stop the existing service first.");
+        eprintln!("Error: whis service is already running.");
+        eprintln!("Use 'whis stop' to stop the existing service first.");
         std::process::exit(1);
     }
 
@@ -115,7 +117,7 @@ fn run_stop() -> Result<()> {
 fn run_status() -> Result<()> {
     if !ipc::is_service_running() {
         println!("Status: Not running");
-        println!("Start with: whispo listen");
+        println!("Start with: whis listen");
         return Ok(());
     }
 
@@ -182,7 +184,7 @@ fn check_ffmpeg() -> Result<()> {
         .is_err()
     {
         eprintln!("Error: FFmpeg is not installed or not in PATH.");
-        eprintln!("\nWhispo requires FFmpeg for audio compression.");
+        eprintln!("\nwhis requires FFmpeg for audio compression.");
         eprintln!("Please install FFmpeg:");
         eprintln!("  - Ubuntu/Debian: sudo apt install ffmpeg");
         eprintln!("  - macOS: brew install ffmpeg");

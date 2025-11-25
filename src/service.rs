@@ -41,7 +41,7 @@ impl Service {
         let ipc_server = IpcServer::new()
             .context("Failed to create IPC server")?;
 
-        println!("Whispo listening. Ctrl+C to stop.");
+        println!("whis listening. Ctrl+C to stop.");
 
         loop {
             // Check for incoming IPC connections (non-blocking)

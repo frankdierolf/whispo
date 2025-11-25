@@ -99,8 +99,8 @@ impl AudioRecorder {
 
         // Write to WAV format in a temporary file
         let temp_dir = std::env::temp_dir();
-        let wav_path = temp_dir.join("whispo_temp.wav");
-        let mp3_path = temp_dir.join("whispo_temp.mp3");
+        let wav_path = temp_dir.join("whis_temp.wav");
+        let mp3_path = temp_dir.join("whis_temp.mp3");
 
         {
             let spec = hound::WavSpec {

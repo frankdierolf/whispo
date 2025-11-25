@@ -24,14 +24,14 @@ pub fn get_socket_path() -> PathBuf {
     // Use XDG_RUNTIME_DIR if available, otherwise fall back to /tmp
     let runtime_dir = std::env::var("XDG_RUNTIME_DIR")
         .unwrap_or_else(|_| "/tmp".to_string());
-    PathBuf::from(runtime_dir).join("whispo.sock")
+    PathBuf::from(runtime_dir).join("whis.sock")
 }
 
 /// Get the PID file path
 pub fn get_pid_path() -> PathBuf {
     let runtime_dir = std::env::var("XDG_RUNTIME_DIR")
         .unwrap_or_else(|_| "/tmp".to_string());
-    PathBuf::from(runtime_dir).join("whispo.pid")
+    PathBuf::from(runtime_dir).join("whis.pid")
 }
 
 /// IPC Server for the background service
@@ -115,18 +115,18 @@ impl IpcClient {
 
         if !socket_path.exists() {
             anyhow::bail!(
-                "Whispo service is not running.\n\
-                Start it with: whispo listen"
+                "whis service is not running.\n\
+                Start it with: whis listen"
             );
         }
 
         let stream = UnixStream::connect(&socket_path)
             .with_context(|| {
                 // If socket exists but connection fails, it's likely stale
-                "Failed to connect to whispo service.\n\
+                "Failed to connect to whis service.\n\
                 The service may have crashed. Try removing stale files:\n\
-                  rm -f $XDG_RUNTIME_DIR/whispo.*\n\
-                Then start the service again with: whispo listen"
+                  rm -f $XDG_RUNTIME_DIR/whis.*\n\
+                Then start the service again with: whis listen"
             })?;
 
         Ok(Self { stream })
