@@ -8,7 +8,10 @@ struct TranscriptionResponse {
 }
 
 pub fn transcribe_audio(api_key: &str, audio_data: Vec<u8>) -> Result<String> {
-    let client = reqwest::blocking::Client::new();
+    let client = reqwest::blocking::Client::builder()
+        .timeout(std::time::Duration::from_secs(300))
+        .build()
+        .context("Failed to create HTTP client")?;
 
     // Create multipart form
     let form = multipart::Form::new()
