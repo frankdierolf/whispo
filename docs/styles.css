@@ -260,8 +260,8 @@ a:hover {
   transition: background 0.15s ease;
 }
 
-[data-slot="command"]:hover {
-  background: var(--color-background-weak-hover);
+[data-slot="command"]:hover [data-component="copy-status"] svg {
+  color: var(--color-text-strong);
 }
 
 [data-slot="command"] code {
