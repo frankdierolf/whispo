@@ -1,11 +1,11 @@
 use anyhow::{Context, Result};
 use std::io::Write;
-use std::sync::{Arc, Mutex};
 use std::sync::mpsc::Receiver;
+use std::sync::{Arc, Mutex};
 use std::time::Duration;
 use tokio::time::sleep;
 
-use crate::audio::AudioRecorder;
+use crate::audio::{AudioRecorder, AudioResult};
 use crate::clipboard;
 use crate::config::Config;
 use crate::ipc::{IpcMessage, IpcResponse, IpcServer};
@@ -38,8 +38,7 @@ impl Service {
     /// Run the service main loop
     pub async fn run(&self, hotkey_rx: Option<Receiver<()>>) -> Result<()> {
         // Create IPC server
-        let ipc_server = IpcServer::new()
-            .context("Failed to create IPC server")?;
+        let ipc_server = IpcServer::new().context("Failed to create IPC server")?;
 
         println!("whis listening. Ctrl+C to stop.");
 
@@ -160,30 +159,39 @@ impl Service {
     /// Stop recording and transcribe
     async fn stop_and_transcribe(&self) -> Result<()> {
         // Get the recorder
-        let mut recorder = self.recorder.lock().unwrap().take()
+        let mut recorder = self
+            .recorder
+            .lock()
+            .unwrap()
+            .take()
             .context("No active recording")?;
 
         // Stop and save audio (blocking operation, run in tokio blocking task)
-        let audio_data = tokio::task::spawn_blocking(move || {
-            recorder.stop_and_save()
-        })
-        .await
-        .context("Failed to join task")??;
+        let audio_result = tokio::task::spawn_blocking(move || recorder.stop_and_save())
+            .await
+            .context("Failed to join task")??;
 
-        // Transcribe (blocking operation)
+        // Transcribe based on result type
         let api_key = self.config.openai_api_key.clone();
-        let transcription = tokio::task::spawn_blocking(move || {
-            transcribe::transcribe_audio(&api_key, audio_data)
-        })
-        .await
-        .context("Failed to join task")??;
+        let transcription = match audio_result {
+            AudioResult::Single(audio_data) => {
+                // Small file - use simple blocking transcription
+                tokio::task::spawn_blocking(move || {
+                    transcribe::transcribe_audio(&api_key, audio_data)
+                })
+                .await
+                .context("Failed to join task")??
+            }
+            AudioResult::Chunked(chunks) => {
+                // Large file - use parallel async transcription
+                transcribe::parallel_transcribe(&api_key, chunks, None).await?
+            }
+        };
 
         // Copy to clipboard (blocking operation)
-        tokio::task::spawn_blocking(move || {
-            clipboard::copy_to_clipboard(&transcription)
-        })
-        .await
-        .context("Failed to join task")??;
+        tokio::task::spawn_blocking(move || clipboard::copy_to_clipboard(&transcription))
+            .await
+            .context("Failed to join task")??;
 
         Ok(())
     }

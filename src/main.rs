@@ -88,9 +88,7 @@ async fn run_listen(hotkey_str: String) -> Result<()> {
     let service = service::Service::new(config)?;
 
     // Set up Ctrl+C handler
-    let service_task = tokio::spawn(async move {
-        service.run(Some(hotkey_rx)).await
-    });
+    let service_task = tokio::spawn(async move { service.run(Some(hotkey_rx)).await });
 
     // Wait for Ctrl+C
     tokio::select! {
@@ -154,18 +152,36 @@ async fn run_record_once() -> Result<()> {
     io::stdout().flush()?;
     wait_for_enter()?;
 
-    // Stop recording and get audio data
-    let audio_data = recorder.stop_and_save()?;
+    // Stop recording and get audio result
+    let audio_result = recorder.stop_and_save()?;
 
-    print!("\rTranscribing...                        \n");
-    io::stdout().flush()?;
+    // Transcribe based on result type
+    let transcription = match audio_result {
+        audio::AudioResult::Single(audio_data) => {
+            // Small file - simple transcription
+            print!("\rTranscribing...                        \n");
+            io::stdout().flush()?;
 
-    // Transcribe
-    let transcription = match transcribe::transcribe_audio(&config.openai_api_key, audio_data) {
-        Ok(text) => text,
-        Err(e) => {
-            eprintln!("Transcription error: {e}");
-            std::process::exit(1);
+            match transcribe::transcribe_audio(&config.openai_api_key, audio_data) {
+                Ok(text) => text,
+                Err(e) => {
+                    eprintln!("Transcription error: {e}");
+                    std::process::exit(1);
+                }
+            }
+        }
+        audio::AudioResult::Chunked(chunks) => {
+            // Large file - parallel transcription
+            print!("\rTranscribing...                        \n");
+            io::stdout().flush()?;
+
+            match transcribe::parallel_transcribe(&config.openai_api_key, chunks, None).await {
+                Ok(text) => text,
+                Err(e) => {
+                    eprintln!("Transcription error: {e}");
+                    std::process::exit(1);
+                }
+            }
         }
     };
 

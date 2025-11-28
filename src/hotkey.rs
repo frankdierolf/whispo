@@ -1,5 +1,5 @@
 use anyhow::{Context, Result};
-use rdev::{grab, Event, EventType, Key};
+use rdev::{Event, EventType, Key, grab};
 use std::collections::HashSet;
 use std::sync::{Arc, Mutex};
 
@@ -119,7 +119,7 @@ fn parse_key(s: &str) -> Result<Key> {
         "down" => Key::DownArrow,
         "left" => Key::LeftArrow,
         "right" => Key::RightArrow,
-        _ => anyhow::bail!("Unknown key: {}", s),
+        _ => anyhow::bail!("Unknown key: {s}"),
     };
     Ok(key)
 }
@@ -140,10 +140,16 @@ where
                 keys.insert(key);
 
                 // Check if hotkey combination is pressed
-                let ctrl_ok = !hotkey.ctrl || keys.contains(&Key::ControlLeft) || keys.contains(&Key::ControlRight);
-                let shift_ok = !hotkey.shift || keys.contains(&Key::ShiftLeft) || keys.contains(&Key::ShiftRight);
+                let ctrl_ok = !hotkey.ctrl
+                    || keys.contains(&Key::ControlLeft)
+                    || keys.contains(&Key::ControlRight);
+                let shift_ok = !hotkey.shift
+                    || keys.contains(&Key::ShiftLeft)
+                    || keys.contains(&Key::ShiftRight);
                 let alt_ok = !hotkey.alt || keys.contains(&Key::Alt) || keys.contains(&Key::AltGr);
-                let super_ok = !hotkey.super_key || keys.contains(&Key::MetaLeft) || keys.contains(&Key::MetaRight);
+                let super_ok = !hotkey.super_key
+                    || keys.contains(&Key::MetaLeft)
+                    || keys.contains(&Key::MetaRight);
                 let key_ok = keys.contains(&hotkey.key);
 
                 if ctrl_ok && shift_ok && alt_ok && super_ok && key_ok {
@@ -162,7 +168,9 @@ where
 
     // This blocks and listens for all keyboard events
     if let Err(e) = grab(callback) {
-        anyhow::bail!("Failed to grab keyboard: {:?}\n\nSetup required:\n  sudo usermod -aG input $USER\n  echo 'KERNEL==\"uinput\", GROUP=\"input\", MODE=\"0660\"' | sudo tee /etc/udev/rules.d/99-uinput.rules\n  sudo udevadm control --reload-rules && sudo udevadm trigger\nThen logout and login again.", e);
+        anyhow::bail!(
+            "Failed to grab keyboard: {e:?}\n\nSetup required:\n  sudo usermod -aG input $USER\n  echo 'KERNEL==\"uinput\", GROUP=\"input\", MODE=\"0660\"' | sudo tee /etc/udev/rules.d/99-uinput.rules\n  sudo udevadm control --reload-rules && sudo udevadm trigger\nThen logout and login again."
+        );
     }
 
     Ok(())

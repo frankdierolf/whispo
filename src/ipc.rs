@@ -22,15 +22,13 @@ pub enum IpcResponse {
 /// Get the socket path for IPC communication
 pub fn get_socket_path() -> PathBuf {
     // Use XDG_RUNTIME_DIR if available, otherwise fall back to /tmp
-    let runtime_dir = std::env::var("XDG_RUNTIME_DIR")
-        .unwrap_or_else(|_| "/tmp".to_string());
+    let runtime_dir = std::env::var("XDG_RUNTIME_DIR").unwrap_or_else(|_| "/tmp".to_string());
     PathBuf::from(runtime_dir).join("whis.sock")
 }
 
 /// Get the PID file path
 pub fn get_pid_path() -> PathBuf {
-    let runtime_dir = std::env::var("XDG_RUNTIME_DIR")
-        .unwrap_or_else(|_| "/tmp".to_string());
+    let runtime_dir = std::env::var("XDG_RUNTIME_DIR").unwrap_or_else(|_| "/tmp".to_string());
     PathBuf::from(runtime_dir).join("whis.pid")
 }
 
@@ -45,15 +43,14 @@ impl IpcServer {
 
         // Remove old socket if it exists
         if socket_path.exists() {
-            std::fs::remove_file(&socket_path)
-                .context("Failed to remove old socket file")?;
+            std::fs::remove_file(&socket_path).context("Failed to remove old socket file")?;
         }
 
-        let listener = UnixListener::bind(&socket_path)
-            .context("Failed to bind Unix socket")?;
+        let listener = UnixListener::bind(&socket_path).context("Failed to bind Unix socket")?;
 
         // Set non-blocking mode for the listener
-        listener.set_nonblocking(true)
+        listener
+            .set_nonblocking(true)
             .context("Failed to set non-blocking mode")?;
 
         Ok(Self { listener })
@@ -86,20 +83,18 @@ impl IpcConnection {
     pub fn receive(&mut self) -> Result<IpcMessage> {
         let mut reader = BufReader::new(&self.stream);
         let mut line = String::new();
-        reader.read_line(&mut line)
+        reader
+            .read_line(&mut line)
             .context("Failed to read from socket")?;
 
-        serde_json::from_str(line.trim())
-            .context("Failed to deserialize message")
+        serde_json::from_str(line.trim()).context("Failed to deserialize message")
     }
 
     /// Send a response to the client
     pub fn send(&mut self, response: IpcResponse) -> Result<()> {
         let json = serde_json::to_string(&response)?;
-        writeln!(self.stream, "{json}")
-            .context("Failed to write to socket")?;
-        self.stream.flush()
-            .context("Failed to flush socket")?;
+        writeln!(self.stream, "{json}").context("Failed to write to socket")?;
+        self.stream.flush().context("Failed to flush socket")?;
         Ok(())
     }
 }
@@ -120,14 +115,13 @@ impl IpcClient {
             );
         }
 
-        let stream = UnixStream::connect(&socket_path)
-            .with_context(|| {
-                // If socket exists but connection fails, it's likely stale
-                "Failed to connect to whis service.\n\
+        let stream = UnixStream::connect(&socket_path).with_context(|| {
+            // If socket exists but connection fails, it's likely stale
+            "Failed to connect to whis service.\n\
                 The service may have crashed. Try removing stale files:\n\
                   rm -f $XDG_RUNTIME_DIR/whis.*\n\
                 Then start the service again with: whis listen"
-            })?;
+        })?;
 
         Ok(Self { stream })
     }
@@ -135,19 +129,17 @@ impl IpcClient {
     pub fn send_message(&mut self, message: IpcMessage) -> Result<IpcResponse> {
         // Send message
         let json = serde_json::to_string(&message)?;
-        writeln!(self.stream, "{json}")
-            .context("Failed to send message")?;
-        self.stream.flush()
-            .context("Failed to flush stream")?;
+        writeln!(self.stream, "{json}").context("Failed to send message")?;
+        self.stream.flush().context("Failed to flush stream")?;
 
         // Receive response
         let mut reader = BufReader::new(&self.stream);
         let mut line = String::new();
-        reader.read_line(&mut line)
+        reader
+            .read_line(&mut line)
             .context("Failed to read response")?;
 
-        serde_json::from_str(line.trim())
-            .context("Failed to deserialize response")
+        serde_json::from_str(line.trim()).context("Failed to deserialize response")
     }
 }
 
@@ -179,8 +171,7 @@ pub fn is_service_running() -> bool {
 pub fn write_pid_file() -> Result<()> {
     let pid_path = get_pid_path();
     let pid = std::process::id();
-    std::fs::write(&pid_path, pid.to_string())
-        .context("Failed to write PID file")?;
+    std::fs::write(&pid_path, pid.to_string()).context("Failed to write PID file")?;
     Ok(())
 }
 

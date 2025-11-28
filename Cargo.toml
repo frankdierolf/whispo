@@ -1,6 +1,6 @@
 [package]
 name = "whis"
-version = "0.4.3"
+version = "0.4.4"
 edition = "2024"
 authors = ["Frank Dierolf <frank_dierolf@web.de>"]
 description = "Voice-to-text CLI for terminal users using OpenAI Whisper API"
