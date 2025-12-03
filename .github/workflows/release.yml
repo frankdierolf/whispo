@@ -75,7 +75,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libasound2-dev
+          sudo apt-get install -y libasound2-dev libx11-dev libxtst-dev
 
       - name: Build
         run: cargo build --release -p whis
@@ -91,36 +91,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: whis-x86_64-unknown-linux-gnu
-          path: dist/whis-*.tar.gz
-
-  build-linux-arm64:
-    needs: [prepare]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: aarch64-unknown-linux-gnu
-
-      - name: Install cross
-        run: cargo install cross --git https://github.com/cross-rs/cross
-
-      - name: Build with cross
-        run: cross build --release --target aarch64-unknown-linux-gnu -p whis
-
-      - name: Package
-        run: |
-          mkdir -p dist
-          cp target/aarch64-unknown-linux-gnu/release/whis dist/
-          cd dist
-          tar -czvf whis-${{ needs.prepare.outputs.version_tag }}-aarch64-unknown-linux-gnu.tar.gz whis
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: whis-aarch64-unknown-linux-gnu
           path: dist/whis-*.tar.gz
 
   build-macos:
@@ -206,7 +176,7 @@ jobs:
 
       - name: Install frontend dependencies
         working-directory: crates/whis-desktop/ui
-        run: npm ci
+        run: npm ci --legacy-peer-deps
 
       - name: Install Tauri CLI
         run: cargo install tauri-cli
@@ -234,7 +204,7 @@ jobs:
           path: target/release/bundle/rpm/*.rpm
 
   release:
-    needs: [prepare, build-linux-x86, build-linux-arm64, build-macos, build-windows, build-desktop-linux]
+    needs: [prepare, build-linux-x86, build-macos, build-windows, build-desktop-linux]
     runs-on: ubuntu-latest
     permissions:
       contents: write

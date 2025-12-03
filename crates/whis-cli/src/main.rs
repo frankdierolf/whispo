@@ -1,5 +1,9 @@
+// Background service modules - only available on Linux
+#[cfg(target_os = "linux")]
 mod hotkey;
+#[cfg(target_os = "linux")]
 mod ipc;
+#[cfg(target_os = "linux")]
 mod service;
 
 use anyhow::Result;
@@ -22,6 +26,7 @@ struct Cli {
 #[derive(Subcommand)]
 enum Commands {
     /// Start the background service that listens for hotkey triggers
+    #[cfg(target_os = "linux")]
     Listen {
         /// Hotkey to trigger recording (e.g., "ctrl+shift+r")
         #[arg(short = 'k', long, default_value = "ctrl+shift+r")]
@@ -29,9 +34,11 @@ enum Commands {
     },
 
     /// Stop the background service
+    #[cfg(target_os = "linux")]
     Stop,
 
     /// Check service status
+    #[cfg(target_os = "linux")]
     Status,
 
     /// Configure settings (API key, etc.)
@@ -51,8 +58,11 @@ async fn main() -> Result<()> {
     let cli = Cli::parse();
 
     match cli.command {
+        #[cfg(target_os = "linux")]
         Some(Commands::Listen { hotkey }) => run_listen(hotkey).await,
+        #[cfg(target_os = "linux")]
         Some(Commands::Stop) => run_stop(),
+        #[cfg(target_os = "linux")]
         Some(Commands::Status) => run_status(),
         Some(Commands::Config { api_key, show }) => run_config(api_key, show),
         None => run_record_once().await,
@@ -60,6 +70,7 @@ async fn main() -> Result<()> {
 }
 
 /// Run the background service
+#[cfg(target_os = "linux")]
 async fn run_listen(hotkey_str: String) -> Result<()> {
     // Check if FFmpeg is available
     ensure_ffmpeg_installed()?;
@@ -115,6 +126,7 @@ async fn run_listen(hotkey_str: String) -> Result<()> {
 }
 
 /// Stop the service
+#[cfg(target_os = "linux")]
 fn run_stop() -> Result<()> {
     let mut client = ipc::IpcClient::connect()?;
     let _ = client.send_message(ipc::IpcMessage::Stop)?;
@@ -123,6 +135,7 @@ fn run_stop() -> Result<()> {
 }
 
 /// Check service status
+#[cfg(target_os = "linux")]
 fn run_status() -> Result<()> {
     if !ipc::is_service_running() {
         println!("Status: Not running");
@@ -292,8 +305,10 @@ fn wait_for_enter() -> Result<()> {
 }
 
 /// Guard to clean up PID and socket files on exit
+#[cfg(target_os = "linux")]
 struct CleanupGuard;
 
+#[cfg(target_os = "linux")]
 impl Drop for CleanupGuard {
     fn drop(&mut self) {
         ipc::remove_pid_file();
