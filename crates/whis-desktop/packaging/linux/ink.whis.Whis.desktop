@@ -7,4 +7,5 @@ Terminal=false
 Type=Application
 Categories=Utility;Audio;
 Keywords=voice;transcription;whisper;speech;
+StartupWMClass=ink.whis.Whis
 StartupNotify=true
