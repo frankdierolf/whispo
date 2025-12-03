@@ -33,6 +33,8 @@ jobs:
   publish-crates:
     needs: [prepare]
     runs-on: ubuntu-latest
+    env:
+      VERSION: ${{ needs.prepare.outputs.version_tag }}
     steps:
       - uses: actions/checkout@v4
 
@@ -40,30 +42,39 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
 
       - name: Publish whis-core
-        continue-on-error: true
-        run: cargo publish -p whis-core --token ${{ secrets.CARGO_REGISTRY_TOKEN }}
-
-      - name: Wait for crates.io propagation
         run: |
-          echo "Waiting for whis-core to propagate to crates.io index..."
-          FOUND=false
-          for i in {1..12}; do
-            if cargo search whis-core 2>/dev/null | grep -q "^whis-core"; then
-              echo "Found in index after $((i*5)) seconds"
-              FOUND=true
-              break
-            fi
-            echo "Attempt $i: Not yet in index, waiting 5s..."
-            sleep 5
-          done
-          if [ "$FOUND" = "false" ]; then
-            echo "ERROR: whis-core did not propagate to index after 60 seconds"
-            exit 1
+          SEMVER="${VERSION#v}"  # Remove 'v' prefix
+
+          # Check if already published
+          if cargo search whis-core 2>/dev/null | grep -q "whis-core = \"$SEMVER\""; then
+            echo "whis-core $SEMVER already published, skipping"
+          else
+            echo "Publishing whis-core $SEMVER..."
+            cargo publish -p whis-core --token ${{ secrets.CARGO_REGISTRY_TOKEN }}
+
+            # Wait for propagation
+            echo "Waiting for crates.io index..."
+            for i in {1..12}; do
+              sleep 5
+              if cargo search whis-core 2>/dev/null | grep -q "whis-core = \"$SEMVER\""; then
+                echo "Found in index"
+                break
+              fi
+              echo "Attempt $i: waiting..."
+            done
           fi
 
       - name: Publish whis
-        continue-on-error: true
-        run: cargo publish -p whis --token ${{ secrets.CARGO_REGISTRY_TOKEN }}
+        run: |
+          SEMVER="${VERSION#v}"  # Remove 'v' prefix
+
+          # Check if already published
+          if cargo search whis 2>/dev/null | grep -q "^whis = \"$SEMVER\""; then
+            echo "whis $SEMVER already published, skipping"
+          else
+            echo "Publishing whis $SEMVER..."
+            cargo publish -p whis --token ${{ secrets.CARGO_REGISTRY_TOKEN }}
+          fi
 
   build-linux-x86:
     needs: [prepare]
@@ -296,5 +307,6 @@ jobs:
           git config user.email "frank_dierolf@web.de"
           git config user.name "Frank Dierolf - GithubActions"
           git add PKGBUILD .SRCINFO
-          git commit -m "Update to $VERSION_TAG"
+          # Don't fail if already up to date (idempotent re-runs)
+          git commit -m "Update to $VERSION_TAG" || echo "Already up to date"
           GIT_SSH_COMMAND="ssh -i ~/.ssh/aur" git push
