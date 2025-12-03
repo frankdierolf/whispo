@@ -23,5 +23,6 @@ dotenvy = "0.15"
 clap = { version = "4.5", features = ["derive"] }
 rdev = { version = "0.5", features = ["unstable_grab"] }
 global-hotkey = "0.7"
+crossbeam-channel = "0.5"
 interprocess = "2"
 whis-core = { path = "crates/whis-core", version = "0.5.7" }

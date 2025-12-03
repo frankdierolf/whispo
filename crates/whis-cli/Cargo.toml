@@ -23,4 +23,5 @@ serde_json.workspace = true
 clap.workspace = true
 rdev.workspace = true
 global-hotkey.workspace = true
+crossbeam-channel.workspace = true
 interprocess.workspace = true

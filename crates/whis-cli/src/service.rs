@@ -166,8 +166,12 @@ impl Service {
             .take()
             .context("No active recording")?;
 
+        // Stop recording and get the Send-safe recording data
+        // (cpal::Stream is dropped here, making RecordingData movable across threads)
+        let recording_data = recorder.stop_recording()?;
+
         // Finalize recording (blocking operation, run in tokio blocking task)
-        let audio_result = tokio::task::spawn_blocking(move || recorder.finalize_recording())
+        let audio_result = tokio::task::spawn_blocking(move || recording_data.finalize())
             .await
             .context("Failed to join task")??;
 

@@ -28,6 +28,14 @@ pub enum RecordingOutput {
     Chunked(Vec<AudioChunk>),
 }
 
+/// Recording data extracted from AudioRecorder after stopping.
+/// This struct is Send-safe (unlike AudioRecorder on macOS where cpal::Stream isn't Send).
+pub struct RecordingData {
+    samples: Vec<f32>,
+    sample_rate: u32,
+    channels: u16,
+}
+
 pub struct AudioRecorder {
     samples: Arc<Mutex<Vec<f32>>>,
     sample_rate: u32,
@@ -109,11 +117,13 @@ impl AudioRecorder {
         Ok(stream)
     }
 
-    pub fn finalize_recording(&mut self) -> Result<RecordingOutput> {
+    /// Stop recording and return the recording data.
+    /// The stream is dropped here, making the returned RecordingData Send-safe.
+    pub fn stop_recording(&mut self) -> Result<RecordingData> {
         // Drop the stream first to release the microphone
         self.stream = None;
 
-        // Take ownership of samples and clear the buffer to prevent reprocessing
+        // Take ownership of samples and clear the buffer
         let samples: Vec<f32> = {
             let mut guard = self.samples.lock().unwrap();
             std::mem::take(&mut *guard)
@@ -123,8 +133,25 @@ impl AudioRecorder {
             anyhow::bail!("No audio data recorded");
         }
 
+        Ok(RecordingData {
+            samples,
+            sample_rate: self.sample_rate,
+            channels: self.channels,
+        })
+    }
+
+    /// Stop recording and finalize in one step (convenience method for single-threaded use).
+    pub fn finalize_recording(&mut self) -> Result<RecordingOutput> {
+        self.stop_recording()?.finalize()
+    }
+}
+
+impl RecordingData {
+    /// Finalize the recording by converting samples to MP3.
+    /// This is Send-safe and can be called from spawn_blocking.
+    pub fn finalize(self) -> Result<RecordingOutput> {
         // Try to convert the entire recording first
-        let mp3_data = self.samples_to_mp3(&samples, "main")?;
+        let mp3_data = self.samples_to_mp3(&self.samples, "main")?;
 
         // If at or under threshold, return as single file (fast path)
         if mp3_data.len() <= CHUNK_THRESHOLD_BYTES {
@@ -140,9 +167,9 @@ impl AudioRecorder {
         let mut chunk_start = 0usize;
         let mut chunk_index = 0usize;
 
-        while chunk_start < samples.len() {
-            let chunk_end = (chunk_start + chunk_samples).min(samples.len());
-            let chunk_slice = &samples[chunk_start..chunk_end];
+        while chunk_start < self.samples.len() {
+            let chunk_end = (chunk_start + chunk_samples).min(self.samples.len());
+            let chunk_slice = &self.samples[chunk_start..chunk_end];
 
             // Convert this chunk to MP3
             let chunk_mp3 = self.samples_to_mp3(chunk_slice, &format!("chunk{chunk_index}"))?;
@@ -156,7 +183,7 @@ impl AudioRecorder {
             chunk_index += 1;
 
             // Check if we've reached the end
-            if chunk_end >= samples.len() {
+            if chunk_end >= self.samples.len() {
                 break;
             }
 

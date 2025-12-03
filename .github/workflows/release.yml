@@ -43,38 +43,19 @@ jobs:
 
       - name: Publish whis-core
         run: |
-          SEMVER="${VERSION#v}"  # Remove 'v' prefix
+          echo "Publishing whis-core..."
+          # Use || true to make idempotent (already exists = success)
+          cargo publish -p whis-core --token ${{ secrets.CARGO_REGISTRY_TOKEN }} || true
 
-          # Check if already published
-          if cargo search whis-core 2>/dev/null | grep -q "whis-core = \"$SEMVER\""; then
-            echo "whis-core $SEMVER already published, skipping"
-          else
-            echo "Publishing whis-core $SEMVER..."
-            cargo publish -p whis-core --token ${{ secrets.CARGO_REGISTRY_TOKEN }}
-
-            # Wait for propagation
-            echo "Waiting for crates.io index..."
-            for i in {1..12}; do
-              sleep 5
-              if cargo search whis-core 2>/dev/null | grep -q "whis-core = \"$SEMVER\""; then
-                echo "Found in index"
-                break
-              fi
-              echo "Attempt $i: waiting..."
-            done
-          fi
+          # Wait for crates.io index propagation before publishing dependent crate
+          echo "Waiting for crates.io index..."
+          sleep 30
 
       - name: Publish whis
         run: |
-          SEMVER="${VERSION#v}"  # Remove 'v' prefix
-
-          # Check if already published
-          if cargo search whis 2>/dev/null | grep -q "^whis = \"$SEMVER\""; then
-            echo "whis $SEMVER already published, skipping"
-          else
-            echo "Publishing whis $SEMVER..."
-            cargo publish -p whis --token ${{ secrets.CARGO_REGISTRY_TOKEN }}
-          fi
+          echo "Publishing whis..."
+          # Use || true to make idempotent (already exists = success)
+          cargo publish -p whis --token ${{ secrets.CARGO_REGISTRY_TOKEN }} || true
 
   build-linux-x86:
     needs: [prepare]
