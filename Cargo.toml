@@ -26,3 +26,9 @@ global-hotkey = "0.7"
 crossbeam-channel = "0.5"
 interprocess = "2"
 whis-core = { path = "crates/whis-core", version = "0.5.7" }
+
+[workspace.metadata.cross.target.aarch64-unknown-linux-gnu]
+pre-build = [
+    "dpkg --add-architecture $CROSS_DEB_ARCH",
+    "apt-get update && apt-get install --assume-yes libasound2-dev:$CROSS_DEB_ARCH"
+]

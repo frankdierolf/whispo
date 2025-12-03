@@ -87,6 +87,34 @@ jobs:
           name: whis-x86_64-unknown-linux-gnu
           path: dist/whis-*.tar.gz
 
+  build-linux-arm64:
+    needs: [prepare]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install cross
+        run: cargo install cross --git https://github.com/cross-rs/cross
+
+      - name: Build with cross
+        run: cross build --release --target aarch64-unknown-linux-gnu -p whis
+
+      - name: Package
+        run: |
+          mkdir -p dist
+          cp target/aarch64-unknown-linux-gnu/release/whis dist/
+          cd dist
+          tar -czvf whis-${{ needs.prepare.outputs.version_tag }}-aarch64-unknown-linux-gnu.tar.gz whis
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: whis-aarch64-unknown-linux-gnu
+          path: dist/whis-*.tar.gz
+
   build-macos:
     needs: [prepare]
     runs-on: macos-latest
@@ -198,7 +226,7 @@ jobs:
           path: target/release/bundle/rpm/*.rpm
 
   release:
-    needs: [prepare, build-linux-x86, build-macos, build-windows, build-desktop-linux]
+    needs: [prepare, build-linux-x86, build-linux-arm64, build-macos, build-windows, build-desktop-linux]
     runs-on: ubuntu-latest
     permissions:
       contents: write
