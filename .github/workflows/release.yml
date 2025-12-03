@@ -1,0 +1,326 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to build (e.g., v0.5.8)'
+        required: true
+        type: string
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      version_tag: ${{ steps.version.outputs.tag }}
+    steps:
+      - name: Determine version tag
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "tag=${{ inputs.tag }}" >> $GITHUB_OUTPUT
+          else
+            echo "tag=${{ github.ref_name }}" >> $GITHUB_OUTPUT
+          fi
+          echo "Using version tag: $(cat $GITHUB_OUTPUT | grep tag | cut -d= -f2)"
+
+  publish-crates:
+    needs: [prepare]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Publish whis-core
+        run: cargo publish -p whis-core --token ${{ secrets.CARGO_REGISTRY_TOKEN }}
+
+      - name: Wait for crates.io propagation
+        run: |
+          echo "Waiting for whis-core to propagate to crates.io index..."
+          FOUND=false
+          for i in {1..12}; do
+            if cargo search whis-core 2>/dev/null | grep -q "^whis-core"; then
+              echo "Found in index after $((i*5)) seconds"
+              FOUND=true
+              break
+            fi
+            echo "Attempt $i: Not yet in index, waiting 5s..."
+            sleep 5
+          done
+          if [ "$FOUND" = "false" ]; then
+            echo "ERROR: whis-core did not propagate to index after 60 seconds"
+            exit 1
+          fi
+
+      - name: Publish whis
+        run: cargo publish -p whis --token ${{ secrets.CARGO_REGISTRY_TOKEN }}
+
+  build-linux-x86:
+    needs: [prepare]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libasound2-dev
+
+      - name: Build
+        run: cargo build --release -p whis
+
+      - name: Package
+        run: |
+          mkdir -p dist
+          cp target/release/whis dist/
+          cd dist
+          tar -czvf whis-${{ needs.prepare.outputs.version_tag }}-x86_64-unknown-linux-gnu.tar.gz whis
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: whis-x86_64-unknown-linux-gnu
+          path: dist/whis-*.tar.gz
+
+  build-linux-arm64:
+    needs: [prepare]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-unknown-linux-gnu
+
+      - name: Install cross
+        run: cargo install cross --git https://github.com/cross-rs/cross
+
+      - name: Build with cross
+        run: cross build --release --target aarch64-unknown-linux-gnu -p whis
+
+      - name: Package
+        run: |
+          mkdir -p dist
+          cp target/aarch64-unknown-linux-gnu/release/whis dist/
+          cd dist
+          tar -czvf whis-${{ needs.prepare.outputs.version_tag }}-aarch64-unknown-linux-gnu.tar.gz whis
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: whis-aarch64-unknown-linux-gnu
+          path: dist/whis-*.tar.gz
+
+  build-macos:
+    needs: [prepare]
+    runs-on: macos-latest
+    strategy:
+      matrix:
+        target:
+          - x86_64-apple-darwin
+          - aarch64-apple-darwin
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Build
+        run: cargo build --release --target ${{ matrix.target }} -p whis
+
+      - name: Package
+        run: |
+          mkdir -p dist
+          cp target/${{ matrix.target }}/release/whis dist/
+          cd dist
+          tar -czvf whis-${{ needs.prepare.outputs.version_tag }}-${{ matrix.target }}.tar.gz whis
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: whis-${{ matrix.target }}
+          path: dist/whis-*.tar.gz
+
+  build-windows:
+    needs: [prepare]
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Build
+        run: cargo build --release -p whis
+
+      - name: Package
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path dist
+          Copy-Item target/release/whis.exe dist/
+          Compress-Archive -Path dist/whis.exe -DestinationPath dist/whis-${{ needs.prepare.outputs.version_tag }}-x86_64-pc-windows-msvc.zip
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: whis-x86_64-pc-windows-msvc
+          path: dist/whis-*.zip
+
+  build-desktop-linux:
+    needs: [prepare]
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Linux dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libwebkit2gtk-4.1-dev \
+            libappindicator3-dev \
+            librsvg2-dev \
+            patchelf \
+            libasound2-dev
+
+      - name: Install frontend dependencies
+        working-directory: crates/whis-desktop/ui
+        run: npm ci
+
+      - name: Install Tauri CLI
+        run: cargo install tauri-cli
+
+      - name: Build desktop app
+        working-directory: crates/whis-desktop
+        run: cargo tauri build
+
+      - name: Upload AppImage
+        uses: actions/upload-artifact@v4
+        with:
+          name: whis-desktop-appimage
+          path: target/release/bundle/appimage/*.AppImage
+
+      - name: Upload deb
+        uses: actions/upload-artifact@v4
+        with:
+          name: whis-desktop-deb
+          path: target/release/bundle/deb/*.deb
+
+      - name: Upload rpm
+        uses: actions/upload-artifact@v4
+        with:
+          name: whis-desktop-rpm
+          path: target/release/bundle/rpm/*.rpm
+
+  release:
+    needs: [prepare, build-linux-x86, build-linux-arm64, build-macos, build-windows, build-desktop-linux]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Display artifacts
+        run: find artifacts -type f
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.prepare.outputs.version_tag }}
+          files: |
+            artifacts/**/*.tar.gz
+            artifacts/**/*.zip
+            artifacts/**/*.AppImage
+            artifacts/**/*.deb
+            artifacts/**/*.rpm
+          generate_release_notes: true
+          draft: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  publish-aur:
+    needs: [prepare, release]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.AUR_SSH_PRIVATE_KEY }}" > ~/.ssh/aur
+          chmod 600 ~/.ssh/aur
+          # Pre-verified AUR host keys (avoid MITM via ssh-keyscan)
+          cat >> ~/.ssh/known_hosts << 'EOF'
+          aur.archlinux.org ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEuBKrPzbawxA/k2g6NcyV5jmqwJ2s+zpgZGZ7tpLIcN
+          EOF
+
+      - name: Clone AUR repo
+        run: |
+          GIT_SSH_COMMAND="ssh -i ~/.ssh/aur" git clone ssh://aur@aur.archlinux.org/whis.git aur-whis
+
+      - name: Update PKGBUILD
+        env:
+          VERSION_TAG: ${{ needs.prepare.outputs.version_tag }}
+        run: |
+          cd aur-whis
+          VERSION="${VERSION_TAG#v}"
+
+          # Update version (anchored to line start)
+          sed -i "s/^pkgver=.*/pkgver=$VERSION/" PKGBUILD
+
+          # Calculate new checksum
+          TARBALL_URL="https://github.com/frankdierolf/whis/archive/refs/tags/$VERSION_TAG.tar.gz"
+          SHA256=$(curl -sL "$TARBALL_URL" | sha256sum | cut -d' ' -f1)
+          sed -i "s/^sha256sums=.*/sha256sums=('$SHA256')/" PKGBUILD
+
+          # Validate changes
+          if ! grep -q "^pkgver=$VERSION$" PKGBUILD; then
+            echo "ERROR: pkgver update failed"
+            exit 1
+          fi
+          echo "Updated PKGBUILD to version $VERSION with sha256=$SHA256"
+
+      - name: Update .SRCINFO
+        run: |
+          cd aur-whis
+          docker run --rm -v "$PWD:/pkg" archlinux:latest bash -c "
+            pacman -Sy --noconfirm base-devel
+            useradd -m builder
+            chown -R builder:builder /pkg
+            cd /pkg && su builder -c 'makepkg --printsrcinfo > .SRCINFO'
+          "
+
+      - name: Push to AUR
+        env:
+          VERSION_TAG: ${{ needs.prepare.outputs.version_tag }}
+        run: |
+          cd aur-whis
+          git config user.email "github-actions@users.noreply.github.com"
+          git config user.name "GitHub Actions"
+          git add PKGBUILD .SRCINFO
+          git commit -m "Update to $VERSION_TAG"
+          GIT_SSH_COMMAND="ssh -i ~/.ssh/aur" git push
