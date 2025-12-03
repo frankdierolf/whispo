@@ -1,6 +1,6 @@
 {
   "name": "whis-desktop-ui",
-  "version": "0.5.5",
+  "version": "0.5.8",
   "type": "module",
   "scripts": {
     "dev": "vite",

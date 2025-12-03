@@ -3,7 +3,7 @@ resolver = "2"
 members = ["crates/whis-core", "crates/whis-cli", "crates/whis-desktop"]
 
 [workspace.package]
-version = "0.5.7"
+version = "0.5.8"
 edition = "2024"
 authors = ["Frank Dierolf <frank_dierolf@web.de>"]
 license = "MIT"
@@ -25,7 +25,7 @@ rdev = { version = "0.5", features = ["unstable_grab"] }
 global-hotkey = "0.7"
 crossbeam-channel = "0.5"
 interprocess = "2"
-whis-core = { path = "crates/whis-core", version = "0.5.7" }
+whis-core = { path = "crates/whis-core", version = "0.5.8" }
 
 [workspace.metadata.cross.target.aarch64-unknown-linux-gnu]
 pre-build = [

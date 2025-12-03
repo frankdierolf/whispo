@@ -333,7 +333,7 @@ jobs:
         run: |
           cd aur-whis
           git config user.email "frank_dierolf@web.de"
-          git config user.name "Frank Dierolf - GithubActions"
+          git config user.name "Frank Dierolf - Github Actions"
           git add PKGBUILD .SRCINFO
           # Don't fail if already up to date (idempotent re-runs)
           git commit -m "Update to $VERSION_TAG" || echo "Already up to date"
