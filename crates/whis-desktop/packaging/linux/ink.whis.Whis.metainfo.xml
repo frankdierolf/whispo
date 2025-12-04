@@ -39,6 +39,43 @@
   </screenshots>
   <content_rating type="oars-1.1"/>
   <releases>
+    <release version="0.5.8" date="2025-12-04">
+      <description>
+        <p>Build and release infrastructure improvements</p>
+        <ul>
+          <li>Cross-platform build system updates</li>
+        </ul>
+      </description>
+    </release>
+    <release version="0.5.7" date="2025-12-03">
+      <description>
+        <p>Smart close behavior for tray-less desktops</p>
+        <ul>
+          <li>Window now quits if there's no way to reopen it</li>
+          <li>Prevents users from getting locked out on desktop environments without system tray support</li>
+        </ul>
+      </description>
+    </release>
+    <release version="0.5.6" date="2025-12-02">
+      <description>
+        <p>AppImage install/uninstall and no-tray support</p>
+        <ul>
+          <li>Add --install and --uninstall CLI flags for AppImage desktop integration</li>
+          <li>Support desktop environments without system tray (GNOME, etc.)</li>
+          <li>Fix Wayland window matching with StartupWMClass</li>
+        </ul>
+      </description>
+    </release>
+    <release version="0.5.5" date="2025-12-02">
+      <description>
+        <p>In-app global shortcut configuration for Portal</p>
+        <ul>
+          <li>Add in-app key capture UI for Portal backends (GNOME 48+, KDE)</li>
+          <li>Register app_id with xdg-desktop-portal Registry for native apps</li>
+          <li>Better Wayland app identification</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.5.4" date="2025-12-01">
       <description>
         <p>Bundle wl-clipboard in Flatpak for GNOME compatibility</p>
